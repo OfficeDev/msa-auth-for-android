@@ -18,10 +18,7 @@
 # Java class files
 *.class
 
-#Gradle
-gradle*
-
-# Android Studio
+# Android Studio & Gradle
 .idea/
 .gradle/
 local.properties
