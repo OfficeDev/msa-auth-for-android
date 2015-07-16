@@ -33,6 +33,11 @@ if (JavaVersion.current().isJava8Compatible()) {
 android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
+    android {
+        lintOptions {
+            abortOnError false
+        }
+    }
 
     defaultConfig {
         minSdkVersion 15
@@ -50,11 +55,10 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    //compile 'com.android.support:appcompat-v7:22.2.0'
 }
 
 
-uploadArchives {
+uploadArchives << {
     configuration = configurations.archives
     repositories.mavenDeployer {
         pom {
