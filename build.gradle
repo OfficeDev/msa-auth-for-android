@@ -20,7 +20,6 @@ allprojects {
     }
 }
 
-
 if (JavaVersion.current().isJava8Compatible()) {
     allprojects {
         tasks.withType(Javadoc) {
@@ -29,10 +28,11 @@ if (JavaVersion.current().isJava8Compatible()) {
     }
 }
 
-
 android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
+
+    // squelching errors from msa
     android {
         lintOptions {
             abortOnError false
