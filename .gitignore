@@ -30,6 +30,7 @@ local.properties
 *.iml
 *~
 *.swp
+*.pro
 
 # generated files
 bin/
