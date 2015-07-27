@@ -510,7 +510,7 @@ public class LiveAuthClient {
     }
 
     /** @return The {@link LiveConnectSession} instance that this {@code LiveAuthClient} created. */
-    LiveConnectSession getSession() {
+    public LiveConnectSession getSession() {
         return session;
     }
 
