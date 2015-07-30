@@ -55,6 +55,7 @@ abstract class TokenRequest {
 
     protected final HttpClient client;
     protected final String clientId;
+    protected final OAuthConfig mOAuthConfig;
 
     /**
      * Constructs a new TokenRequest instance and initializes its parameters.
@@ -62,13 +63,14 @@ abstract class TokenRequest {
      * @param client the HttpClient to make HTTP requests on
      * @param clientId the client_id of the calling application
      */
-    public TokenRequest(HttpClient client, String clientId) {
+    public TokenRequest(HttpClient client, String clientId, final OAuthConfig oAuthConfig) {
         assert client != null;
         assert clientId != null;
         assert !TextUtils.isEmpty(clientId);
 
         this.client = client;
         this.clientId = clientId;
+        this.mOAuthConfig = oAuthConfig;
     }
 
     /**
@@ -79,7 +81,7 @@ abstract class TokenRequest {
      *                           (e.g., IOException, JSONException)
      */
     public OAuthResponse execute() throws LiveAuthException {
-        final Uri requestUri = Config.INSTANCE.getOAuthTokenUri();
+        final Uri requestUri = mOAuthConfig.getTokenUri();
 
         final HttpPost request = new HttpPost(requestUri.toString());
 
