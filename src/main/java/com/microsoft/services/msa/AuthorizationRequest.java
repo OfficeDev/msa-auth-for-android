@@ -101,11 +101,11 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
                 Uri uri = Uri.parse(url);
 
                 // only clear cookies that are on the logout domain.
-                if (uri.getHost().equals(Config.INSTANCE.getOAuthLogoutUri().getHost())) {
+                if (uri.getHost().equals(mOAuthConfig.getLogoutUri().getHost())) {
                     this.saveCookiesInMemory(this.cookieManager.getCookie(url));
                 }
 
-                Uri endUri = Config.INSTANCE.getOAuthDesktopUri();
+                Uri endUri = mOAuthConfig.getDesktopUri();
                 boolean isEndUri = UriComparator.INSTANCE.compare(uri, endUri) == 0;
                 if (!isEndUri) {
                     return;
@@ -293,24 +293,23 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
     private final HttpClient client;
     private final String clientId;
     private final DefaultObservableOAuthRequest observable;
-    private final String redirectUri;
     private final String scope;
+    private final OAuthConfig mOAuthConfig;
 
     public AuthorizationRequest(Activity activity,
                                 HttpClient client,
                                 String clientId,
-                                String redirectUri,
-                                String scope) {
+                                String scope,
+                                final OAuthConfig oAuthConfig) {
         assert activity != null;
         assert client != null;
         assert !TextUtils.isEmpty(clientId);
-        assert !TextUtils.isEmpty(redirectUri);
         assert !TextUtils.isEmpty(scope);
 
         this.activity = activity;
         this.client = client;
         this.clientId = clientId;
-        this.redirectUri = redirectUri;
+        this.mOAuthConfig = oAuthConfig;
         this.observable = new DefaultObservableOAuthRequest();
         this.scope = scope;
     }
@@ -329,14 +328,14 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
         String displayType = this.getDisplayParameter();
         String responseType = OAuth.ResponseType.CODE.toString().toLowerCase(Locale.US);
         String locale = Locale.getDefault().toString();
-        Uri requestUri = Config.INSTANCE.getOAuthAuthorizeUri()
+        Uri requestUri = mOAuthConfig.getAuthorizeUri()
                                         .buildUpon()
                                         .appendQueryParameter(OAuth.CLIENT_ID, this.clientId)
                                         .appendQueryParameter(OAuth.SCOPE, this.scope)
                                         .appendQueryParameter(OAuth.DISPLAY, displayType)
                                         .appendQueryParameter(OAuth.RESPONSE_TYPE, responseType)
                                         .appendQueryParameter(OAuth.LOCALE, locale)
-                                        .appendQueryParameter(OAuth.REDIRECT_URI, this.redirectUri)
+                                        .appendQueryParameter(OAuth.REDIRECT_URI, mOAuthConfig.getDesktopUri().toString())
                                         .build();
 
         OAuthDialog oAuthDialog = new OAuthDialog(requestUri);
@@ -412,8 +411,8 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
         // UI/main thread (which we are on right now).
         AccessTokenRequest request = new AccessTokenRequest(this.client,
                                                             this.clientId,
-                                                            this.redirectUri,
-                                                            code);
+                                                            code,
+                                                            mOAuthConfig);
 
         TokenRequestAsync requestAsync = new TokenRequestAsync(request);
         // We want to know when this request finishes, because we need to notify our

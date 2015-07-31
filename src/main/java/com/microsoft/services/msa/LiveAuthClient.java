@@ -241,6 +241,9 @@ public class LiveAuthClient {
     /** saved from initialize and used in the login call if login's scopes are null. */
     private Set<String> baseScopes;
 
+    /** The OAuth configuration */
+    private final OAuthConfig mOAuthConfig;
+
     /** One-to-one relationship between LiveAuthClient and LiveConnectSession. */
     private final LiveConnectSession session;
 
@@ -259,29 +262,46 @@ public class LiveAuthClient {
      *        See <a href="http://msdn.microsoft.com/en-us/library/hh243646.aspx">MSDN Live Connect
      *        Reference's Scopes and permissions</a> for a list of scopes and explanations.
      */
-    public LiveAuthClient(Context context, String clientId, Iterable<String> scopes) {
+    public LiveAuthClient(final Context context,
+                          final String clientId,
+                          final Iterable<String> scopes,
+                          final OAuthConfig oAuthConfig) {
         LiveConnectUtils.assertNotNull(context, "context");
         LiveConnectUtils.assertNotNullOrEmpty(clientId, "clientId");
 
         this.applicationContext = context.getApplicationContext();
         this.clientId = clientId;
 
-        if (scopes == null) {
-            scopes = Arrays.asList(new String[0]);
+
+        if (oAuthConfig == null) {
+            this.mOAuthConfig = MicrosoftOAuthConfig.getInstance();
+        } else {
+            this.mOAuthConfig = oAuthConfig;
         }
 
         // copy scopes for login
-        this.baseScopes = new HashSet<String>();
-        for (String scope : scopes) {
+        Iterable<String> tempScopes = scopes;
+        if (tempScopes == null) {
+            tempScopes = Arrays.asList(new String[0]);
+        }
+
+        this.baseScopes = new HashSet<>();
+        for (final String scope : tempScopes) {
             this.baseScopes.add(scope);
         }
+
         this.baseScopes = Collections.unmodifiableSet(this.baseScopes);
-
-        //TODO: Deserialize tokens from cache into LiveConnectSession?
-
     }
 
-    public LiveAuthClient(Context context, String clientId) { this(context, clientId, null); }
+    public LiveAuthClient(final Context context, final String clientId) {
+        this(context, clientId, null);
+    }
+
+    public LiveAuthClient(final Context context,
+                          final String clientId,
+                          final Iterable<String> scopes) {
+        this(context,clientId, scopes, null);
+    }
 
     /** @return the client_id of the Live Connect application. */
     public String getClientId() {
@@ -348,13 +368,12 @@ public class LiveAuthClient {
 
         // silent login failed, initiating interactive login
         String scope = TextUtils.join(OAuth.SCOPE_DELIMITER, scopes);
-        String redirectUri = Config.INSTANCE.getOAuthDesktopUri().toString();
 
         AuthorizationRequest request = new AuthorizationRequest(activity,
                                                                 this.httpClient,
                                                                 this.clientId,
-                                                                redirectUri,
-                                                                scope);
+                                                                scope,
+                                                                mOAuthConfig);
 
         request.addObserver(new ListenerCallerObserver(listener, userState));
         request.addObserver(new RefreshTokenWriter());
@@ -484,7 +503,7 @@ public class LiveAuthClient {
         CookieSyncManager cookieSyncManager =
                 CookieSyncManager.createInstance(this.applicationContext);
         CookieManager manager = CookieManager.getInstance();
-        Uri logoutUri = Config.INSTANCE.getOAuthLogoutUri();
+        final Uri logoutUri = mOAuthConfig.getLogoutUri();
         String url = logoutUri.toString();
         String domain = logoutUri.getHost();
 
@@ -531,7 +550,7 @@ public class LiveAuthClient {
 
         Log.i(TAG, "Refresh token found, attempting to refresh access and refresh tokens.");
         RefreshAccessTokenRequest request =
-                new RefreshAccessTokenRequest(this.httpClient, this.clientId, refreshToken, scope);
+                new RefreshAccessTokenRequest(this.httpClient, this.clientId, refreshToken, scope, mOAuthConfig);
 
         OAuthResponse response;
         try {

@@ -49,30 +49,20 @@ class AccessTokenRequest extends TokenRequest {
     private final OAuth.GrantType grantType;
 
     /**
-     * REQUIRED, if the "redirect_uri" parameter was included in the
-     * authorization request as described in Section 4.1.1, and their
-     * values MUST be identical.
-     */
-    private final String redirectUri;
-
-    /**
      * Constructs a new AccessTokenRequest, and initializes its member variables
      *
      * @param client the HttpClient to make HTTP requests on
      * @param clientId the client_id of the calling application
-     * @param redirectUri the redirect_uri to be called back
      * @param code the authorization code received from the AuthorizationRequest
      */
-    public AccessTokenRequest(HttpClient client,
-                              String clientId,
-                              String redirectUri,
-                              String code) {
-        super(client, clientId);
+    public AccessTokenRequest(final HttpClient client,
+                              final String clientId,
+                              final String code,
+                              final OAuthConfig oAuthConfig) {
+        super(client, clientId, oAuthConfig);
 
-        assert !TextUtils.isEmpty(redirectUri);
         assert !TextUtils.isEmpty(code);
 
-        this.redirectUri = redirectUri;
         this.code = code;
         this.grantType = OAuth.GrantType.AUTHORIZATION_CODE;
     }
@@ -85,7 +75,7 @@ class AccessTokenRequest extends TokenRequest {
     @Override
     protected void constructBody(List<NameValuePair> body) {
         body.add(new BasicNameValuePair(OAuth.CODE, this.code));
-        body.add(new BasicNameValuePair(OAuth.REDIRECT_URI, this.redirectUri));
+        body.add(new BasicNameValuePair(OAuth.REDIRECT_URI, mOAuthConfig.getDesktopUri().toString()));
         body.add(new BasicNameValuePair(OAuth.GRANT_TYPE,
                                         this.grantType.toString().toLowerCase(Locale.US)));
     }
