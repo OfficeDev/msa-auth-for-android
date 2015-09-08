@@ -58,7 +58,7 @@ dependencies {
 }
 
 
-uploadArchives << {
+uploadArchives {
     configuration = configurations.archives
     repositories.mavenDeployer {
         pom {
