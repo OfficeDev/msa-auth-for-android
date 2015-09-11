@@ -54,7 +54,7 @@ enum Config {
     }
 
     public void setApiVersion(String apiVersion) {
-        assert !TextUtils.isEmpty(apiVersion);
+        if (TextUtils.isEmpty(apiVersion)) throw new AssertionError();
         this.apiVersion = apiVersion;
     }
 }

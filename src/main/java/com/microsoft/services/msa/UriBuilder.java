@@ -46,15 +46,15 @@ class UriBuilder {
          * @param key
          */
         public QueryParameter(String key) {
-            assert key != null;
+            if (key == null) throw new AssertionError();
 
             this.key = key;
             this.value = null;
         }
 
         public QueryParameter(String key, String value) {
-            assert key != null;
-            assert value != null;
+            if (key == null) throw new AssertionError();
+            if (value == null) throw new AssertionError();
 
             this.key = key;
             this.value = value;
@@ -119,8 +119,8 @@ class UriBuilder {
      * @return this UriBuilder object. Useful for chaining.
      */
     public UriBuilder appendQueryParameter(String key, String value) {
-        assert key != null;
-        assert value != null;
+        if (key == null) throw new AssertionError();
+        if (value == null) throw new AssertionError();
 
         this.queryParameters.add(new QueryParameter(key, value));
 
@@ -154,7 +154,7 @@ class UriBuilder {
 
                 this.queryParameters.add(new QueryParameter(key));
             } else {
-                Log.w("com.microsoft.live.auth.UriBuilder", "Invalid query parameter: " + pair);
+                Log.w("live.auth.UriBuilder", "Invalid query parameter: " + pair);
             }
         }
 
@@ -168,7 +168,7 @@ class UriBuilder {
      * @return this UriBuilder object. Useful for chaining.
      */
     public UriBuilder appendToPath(String path) {
-        assert path != null;
+        if (path == null) throw new AssertionError();
 
         if (this.path == null) {
             this.path = new StringBuilder(path);
@@ -215,7 +215,7 @@ class UriBuilder {
      * @return this UriBuilder object. Useful for chaining.
      */
     public UriBuilder host(String host) {
-        assert host != null;
+        if (host == null) throw new AssertionError();
         this.host = host;
 
         return this;
@@ -228,7 +228,7 @@ class UriBuilder {
      * @return this UriBuilder object. Useful for chaining.
      */
     public UriBuilder path(String path) {
-        assert path != null;
+        if (path == null) throw new AssertionError();
         this.path = new StringBuilder(path);
 
         return this;
@@ -277,7 +277,7 @@ class UriBuilder {
      * @return this UriBuilder object. Useful for chaining.
      */
     public UriBuilder scheme(String scheme) {
-        assert scheme != null;
+        if (scheme == null) throw new AssertionError();
         this.scheme = scheme;
 
         return this;

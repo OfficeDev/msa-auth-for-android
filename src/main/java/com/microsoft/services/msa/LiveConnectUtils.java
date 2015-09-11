@@ -40,7 +40,7 @@ final class LiveConnectUtils {
      * @throws NullPointerException if the Object is null
      */
     public static void assertNotNull(Object object, String parameterName) {
-        assert !TextUtils.isEmpty(parameterName);
+        if (TextUtils.isEmpty(parameterName)) throw new AssertionError();
 
         if (object == null) {
             final String message = String.format(ErrorMessages.NULL_PARAMETER, parameterName);
@@ -58,7 +58,7 @@ final class LiveConnectUtils {
      * @throws NullPointerException if the String is null
      */
     public static void assertNotNullOrEmpty(String parameter, String parameterName) {
-        assert !TextUtils.isEmpty(parameterName);
+        if (TextUtils.isEmpty(parameterName)) throw new AssertionError();
 
         assertNotNull(parameter, parameterName);
 
@@ -73,3 +73,4 @@ final class LiveConnectUtils {
      */
     private LiveConnectUtils() { throw new AssertionError(ErrorMessages.NON_INSTANTIABLE_CLASS); }
 }
+

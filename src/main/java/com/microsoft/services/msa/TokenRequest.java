@@ -64,9 +64,9 @@ abstract class TokenRequest {
      * @param clientId the client_id of the calling application
      */
     public TokenRequest(HttpClient client, String clientId, final OAuthConfig oAuthConfig) {
-        assert client != null;
-        assert clientId != null;
-        assert !TextUtils.isEmpty(clientId);
+        if (client == null) throw new AssertionError();
+        if (clientId == null) throw new AssertionError();
+        if (TextUtils.isEmpty(clientId)) throw new AssertionError();
 
         this.client = client;
         this.clientId = clientId;
