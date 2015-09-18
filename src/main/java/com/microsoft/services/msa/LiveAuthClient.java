@@ -313,7 +313,11 @@ public class LiveAuthClient {
     }
 
     public void login(Activity activity, Iterable<String> scopes, LiveAuthListener listener) {
-        this.login(activity, scopes, null, listener);
+        this.login(activity, scopes, null, null, listener);
+    }
+
+    public void login(Activity activity, Iterable<String> scopes, Object userState, LiveAuthListener listener) {
+        this.login(activity, scopes, userState, null, listener);
     }
 
     /**
@@ -332,12 +336,14 @@ public class LiveAuthClient {
      *        Reference's Scopes and permissions</a> for a list of scopes and explanations.
      *        Scopes specified here override scopes specified in the constructor.
      * @param userState arbitrary object that is used to determine the caller of the method.
+     * @param loginHint the hint for the sign in experience to show the username pre-filled out
      * @param listener called on either completion or error during the login process.
      * @throws IllegalStateException if there is a pending login request.
      */
     public void login(Activity activity,
                       Iterable<String> scopes,
                       Object userState,
+                      String loginHint,
                       LiveAuthListener listener
                       ) {
         LiveConnectUtils.assertNotNull(activity, "activity");
@@ -373,6 +379,7 @@ public class LiveAuthClient {
                                                                 this.httpClient,
                                                                 this.clientId,
                                                                 scope,
+                                                                loginHint,
                                                                 mOAuthConfig);
 
         request.addObserver(new ListenerCallerObserver(listener, userState));

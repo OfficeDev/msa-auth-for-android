@@ -294,12 +294,14 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
     private final String clientId;
     private final DefaultObservableOAuthRequest observable;
     private final String scope;
+    private final String loginHint;
     private final OAuthConfig mOAuthConfig;
 
     public AuthorizationRequest(Activity activity,
                                 HttpClient client,
                                 String clientId,
                                 String scope,
+                                String loginHint,
                                 final OAuthConfig oAuthConfig) {
         assert activity != null;
         assert client != null;
@@ -312,6 +314,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
         this.mOAuthConfig = oAuthConfig;
         this.observable = new DefaultObservableOAuthRequest();
         this.scope = scope;
+        this.loginHint = loginHint;
     }
 
     @Override
@@ -328,15 +331,20 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
         String displayType = this.getDisplayParameter();
         String responseType = OAuth.ResponseType.CODE.toString().toLowerCase(Locale.US);
         String locale = Locale.getDefault().toString();
-        Uri requestUri = mOAuthConfig.getAuthorizeUri()
-                                        .buildUpon()
-                                        .appendQueryParameter(OAuth.CLIENT_ID, this.clientId)
-                                        .appendQueryParameter(OAuth.SCOPE, this.scope)
-                                        .appendQueryParameter(OAuth.DISPLAY, displayType)
-                                        .appendQueryParameter(OAuth.RESPONSE_TYPE, responseType)
-                                        .appendQueryParameter(OAuth.LOCALE, locale)
-                                        .appendQueryParameter(OAuth.REDIRECT_URI, mOAuthConfig.getDesktopUri().toString())
-                                        .build();
+        final Uri.Builder requestUriBuilder = mOAuthConfig.getAuthorizeUri()
+            .buildUpon()
+            .appendQueryParameter(OAuth.CLIENT_ID, this.clientId)
+            .appendQueryParameter(OAuth.SCOPE, this.scope)
+            .appendQueryParameter(OAuth.DISPLAY, displayType)
+            .appendQueryParameter(OAuth.RESPONSE_TYPE, responseType)
+            .appendQueryParameter(OAuth.LOCALE, locale)
+            .appendQueryParameter(OAuth.REDIRECT_URI, mOAuthConfig.getDesktopUri().toString());
+
+        if (this.loginHint != null) {
+            requestUriBuilder.appendQueryParameter(OAuth.LOGIN_HINT, this.loginHint);
+        }
+
+        Uri requestUri = requestUriBuilder.build();
 
         OAuthDialog oAuthDialog = new OAuthDialog(requestUri);
         oAuthDialog.show();
