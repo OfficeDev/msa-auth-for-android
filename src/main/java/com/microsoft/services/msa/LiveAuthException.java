@@ -48,7 +48,7 @@ public class LiveAuthException extends RuntimeException {
     public LiveAuthException(String error, String errorDescription, String errorUri) {
         super(errorDescription);
 
-        assert error != null;
+        if (error == null) throw new AssertionError();
 
         this.error = error;
         this.errorUri = errorUri;
@@ -57,7 +57,7 @@ public class LiveAuthException extends RuntimeException {
     public LiveAuthException(String error, String errorDescription, String errorUri, Throwable cause) {
         super(errorDescription, cause);
 
-        assert error != null;
+        if (error == null) throw new AssertionError();
 
         this.error = error;
         this.errorUri = errorUri;
@@ -77,3 +77,4 @@ public class LiveAuthException extends RuntimeException {
         return this.errorUri;
     }
 }
+

@@ -171,7 +171,7 @@ public class LiveAuthClient {
         }
 
         private boolean saveRefreshTokenToPreferences(String refreshToken) {
-            assert !TextUtils.isEmpty(refreshToken);
+            if (TextUtils.isEmpty(refreshToken)) throw new AssertionError();
 
             SharedPreferences settings =
                     applicationContext.getSharedPreferences(PreferencesConstants.FILE_NAME,
@@ -193,7 +193,7 @@ public class LiveAuthClient {
         private boolean visitedSuccessfulResponse;
 
         public SessionRefresher(LiveConnectSession session) {
-            assert session != null;
+            if (session == null) throw new AssertionError();
 
             this.session = session;
             this.visitedSuccessfulResponse = false;
@@ -579,7 +579,7 @@ public class LiveAuthClient {
      * @param client The new HttpClient to be set.
      */
     void setHttpClient(HttpClient client) {
-        assert client != null;
+        if (client == null) throw new AssertionError();
         this.httpClient = client;
     }
 

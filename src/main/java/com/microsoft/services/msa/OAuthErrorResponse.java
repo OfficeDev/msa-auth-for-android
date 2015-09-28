@@ -44,7 +44,7 @@ class OAuthErrorResponse implements OAuthResponse {
         private String errorUri;
 
         public Builder(OAuth.ErrorType error) {
-            assert error != null;
+            if (error == null) throw new AssertionError();
 
             this.error = error;
         }

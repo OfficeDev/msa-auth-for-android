@@ -61,7 +61,8 @@ class AccessTokenRequest extends TokenRequest {
                               final OAuthConfig oAuthConfig) {
         super(client, clientId, oAuthConfig);
 
-        assert !TextUtils.isEmpty(code);
+        if (TextUtils.isEmpty(code)) 
+        	throw new AssertionError();
 
         this.code = code;
         this.grantType = OAuth.GrantType.AUTHORIZATION_CODE;

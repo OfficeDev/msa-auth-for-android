@@ -48,9 +48,9 @@ class OAuthSuccessfulResponse implements OAuthResponse {
         private final OAuth.TokenType tokenType;
 
         public Builder(String accessToken, OAuth.TokenType tokenType) {
-            assert accessToken != null;
-            assert !TextUtils.isEmpty(accessToken);
-            assert tokenType != null;
+            if (accessToken == null) throw new AssertionError();
+            if (TextUtils.isEmpty(accessToken)) throw new AssertionError();
+            if (tokenType == null) throw new AssertionError();
 
             this.accessToken = accessToken;
             this.tokenType = tokenType;
@@ -94,8 +94,8 @@ class OAuthSuccessfulResponse implements OAuthResponse {
         String tokenTypeString = fragmentParameters.get(OAuth.TOKEN_TYPE);
 
         // must have accessToken and tokenTypeString to be a valid OAuthSuccessfulResponse
-        assert accessToken != null;
-        assert tokenTypeString != null;
+        if (accessToken == null) throw new AssertionError();
+        if (tokenTypeString == null) throw new AssertionError();
 
         OAuth.TokenType tokenType;
         try {
@@ -142,7 +142,7 @@ class OAuthSuccessfulResponse implements OAuthResponse {
      */
     public static OAuthSuccessfulResponse createFromJson(JSONObject response)
             throws LiveAuthException {
-        assert validOAuthSuccessfulResponse(response);
+        if (!validOAuthSuccessfulResponse(response)) throw new AssertionError();
 
         final String accessToken;
         try {

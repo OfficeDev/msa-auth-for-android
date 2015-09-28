@@ -61,7 +61,7 @@ public class LiveConnectSession {
      * @param creator
      */
     LiveConnectSession(LiveAuthClient creator) {
-        assert creator != null;
+        if (creator == null) throw new AssertionError();
 
         this.creator = creator;
         this.changeSupport = new PropertyChangeSupport(this);

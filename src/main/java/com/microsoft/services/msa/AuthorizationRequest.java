@@ -186,7 +186,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
             super(AuthorizationRequest.this.activity, android.R.style.Theme_Translucent_NoTitleBar);
             this.setOwnerActivity(AuthorizationRequest.this.activity);
 
-            assert requestUri != null;
+            if (requestUri == null) throw new AssertionError();
             this.requestUri = requestUri;
         }
 
@@ -244,7 +244,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
             String[] lhsParts = { lhs.getScheme(), lhs.getAuthority(), lhs.getPath() };
             String[] rhsParts = { rhs.getScheme(), rhs.getAuthority(), rhs.getPath() };
 
-            assert lhsParts.length == rhsParts.length;
+            if (lhsParts.length != rhsParts.length) throw new AssertionError();
             for (int i = 0; i < lhsParts.length; i++) {
                 int compare = lhsParts[i].compareTo(rhsParts[i]);
                 if (compare != 0) {
@@ -294,10 +294,10 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
                                 String scope,
                                 String loginHint,
                                 final OAuthConfig oAuthConfig) {
-        assert activity != null;
-        assert client != null;
-        assert !TextUtils.isEmpty(clientId);
-        assert !TextUtils.isEmpty(scope);
+        if (activity == null) throw new AssertionError();
+        if (client == null) throw new AssertionError();
+        if (TextUtils.isEmpty(clientId)) throw new AssertionError();
+        if (TextUtils.isEmpty(scope)) throw new AssertionError();
 
         this.activity = activity;
         this.client = client;
@@ -379,7 +379,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
      * @param fragmentParameters in the uri
      */
     private void onAccessTokenResponse(Map<String, String> fragmentParameters) {
-        assert fragmentParameters != null;
+        if (fragmentParameters == null) throw new AssertionError();
 
         OAuthSuccessfulResponse response;
         try {
@@ -403,7 +403,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
      * @param code is the authorization code from the uri
      */
     private void onAuthorizationResponse(String code) {
-        assert !TextUtils.isEmpty(code);
+        if (TextUtils.isEmpty(code)) throw new AssertionError();
 
         // Since we DO have an authorization code, launch an AccessTokenRequest.
         // We do this asynchronously to prevent the HTTP IO from occupying the

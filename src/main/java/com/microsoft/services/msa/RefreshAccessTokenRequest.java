@@ -53,10 +53,10 @@ class RefreshAccessTokenRequest extends TokenRequest {
                                      final OAuthConfig oAuthConfig) {
         super(client, clientId, oAuthConfig);
 
-        assert refreshToken != null;
-        assert !TextUtils.isEmpty(refreshToken);
-        assert scope != null;
-        assert !TextUtils.isEmpty(scope);
+        if (refreshToken == null) throw new AssertionError();
+        if (TextUtils.isEmpty(refreshToken)) throw new AssertionError();
+        if (scope == null) throw new AssertionError();
+        if (TextUtils.isEmpty(scope)) throw new AssertionError();
 
         this.refreshToken = refreshToken;
         this.scope = scope;

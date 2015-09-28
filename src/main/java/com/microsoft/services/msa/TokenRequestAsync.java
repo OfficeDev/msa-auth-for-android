@@ -46,7 +46,7 @@ class TokenRequestAsync extends AsyncTask<Void, Void, Void> implements Observabl
      * @param request to perform
      */
     public TokenRequestAsync(TokenRequest request) {
-        assert request != null;
+        if (request == null) throw new AssertionError();
 
         this.observerable = new DefaultObservableOAuthRequest();
         this.request = request;
