@@ -495,22 +495,6 @@ public class LiveAuthClient {
      * @param listener called on either completion or error during the logout process.
      */
     public void logout(Object userState, LiveAuthListener listener) {
-        this.logout(userState, listener, false);
-    }
-    
-    /**
-     * Logs out the given user.
-     *
-     * Also, this method clears the previously created {@link LiveConnectSession}.
-     * {@link LiveAuthListener#onAuthComplete(LiveStatus, LiveConnectSession, Object)} will be
-     * called on completion. Otherwise,
-     * {@link LiveAuthListener#onAuthError(LiveAuthException, Object)} will be called.
-     *
-     * @param userState arbitrary object that is used to determine the caller of the method.
-     * @param listener called on either completion or error during the logout process.
-     * @param dropCookies pass true to force the user to enter his credentials (again) on login
-     */
-    public void logout(Object userState, LiveAuthListener listener, boolean dropCookies) {
         if (listener == null) {
             listener = NULL_LISTENER;
         }
@@ -527,29 +511,11 @@ public class LiveAuthClient {
                 CookieSyncManager.createInstance(this.applicationContext);
         CookieManager manager = CookieManager.getInstance();
         
-        if (dropCookies) {
-            // clear cookies to force prompt on login
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                manager.removeAllCookies(null);
-            else
-                manager.removeAllCookie();
-        } else {
-            final Uri logoutUri = mOAuthConfig.getLogoutUri();
-            String url = logoutUri.toString();
-            String domain = logoutUri.getHost();
-    
-            List<String> cookieKeys = this.getCookieKeysFromPreferences();
-            for (String cookieKey : cookieKeys) {
-                String value = TextUtils.join("", new String[] {
-                   cookieKey,
-                   "=; expires=Thu, 30-Oct-1980 16:00:00 GMT;domain=",
-                   domain,
-                   ";path=/;version=1"
-                });
-    
-                manager.setCookie(url, value);
-            }
-        }
+        // clear cookies to force prompt on login
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            manager.removeAllCookies(null);
+        else
+            manager.removeAllCookie();
 
         cookieSyncManager.sync();
         listener.onAuthComplete(LiveStatus.UNKNOWN, null, userState);
