@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.CookieManager;
@@ -494,7 +495,7 @@ public class LiveAuthClient {
      * @param listener called on either completion or error during the logout process.
      */
     public void logout(Object userState, LiveAuthListener listener) {
-        this(userState, listener, false);
+        this.logout(userState, listener, false);
     }
     
     /**
