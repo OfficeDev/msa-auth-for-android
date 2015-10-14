@@ -292,6 +292,17 @@ public class LiveAuthClient {
         }
 
         this.baseScopes = Collections.unmodifiableSet(this.baseScopes);
+
+        RefreshAccessTokenRequest request = new RefreshAccessTokenRequest(this.httpClient,
+                                                                          this.clientId,
+                                                                          this.getRefreshTokenFromPreferences(),
+                                                                          TextUtils.join(OAuth.SCOPE_DELIMITER, this.baseScopes),
+                                                                          this.mOAuthConfig);
+        TokenRequestAsync requestAsync = new TokenRequestAsync(request);
+
+        requestAsync.addObserver(new RefreshTokenWriter());
+
+        requestAsync.execute();
     }
 
     public LiveAuthClient(final Context context, final String clientId) {
@@ -446,6 +457,9 @@ public class LiveAuthClient {
             }
         }
 
+        if (TextUtils.isEmpty(this.session.getRefreshToken())) {
+            this.session.setRefreshToken(getRefreshTokenFromPreferences());
+        }
 
         // if the session is valid and contains all the scopes, do not display the login ui.
         boolean needNewAccessToken = this.session.isExpired() || !this.session.contains(scopes);
