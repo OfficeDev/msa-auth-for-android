@@ -333,6 +333,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
 
         if (this.loginHint != null) {
             requestUriBuilder.appendQueryParameter(OAuth.LOGIN_HINT, this.loginHint);
+            requestUriBuilder.appendQueryParameter(OAuth.USER_NAME, this.loginHint);
         }
 
         Uri requestUri = requestUriBuilder.build();
