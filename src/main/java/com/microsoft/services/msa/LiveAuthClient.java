@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.CookieManager;
@@ -291,6 +292,17 @@ public class LiveAuthClient {
         }
 
         this.baseScopes = Collections.unmodifiableSet(this.baseScopes);
+
+        RefreshAccessTokenRequest request = new RefreshAccessTokenRequest(this.httpClient,
+                                                                          this.clientId,
+                                                                          this.getRefreshTokenFromPreferences(),
+                                                                          TextUtils.join(OAuth.SCOPE_DELIMITER, this.baseScopes),
+                                                                          this.mOAuthConfig);
+        TokenRequestAsync requestAsync = new TokenRequestAsync(request);
+
+        requestAsync.addObserver(new RefreshTokenWriter());
+
+        requestAsync.execute();
     }
 
     public LiveAuthClient(final Context context, final String clientId) {
@@ -445,6 +457,9 @@ public class LiveAuthClient {
             }
         }
 
+        if (TextUtils.isEmpty(this.session.getRefreshToken())) {
+            this.session.setRefreshToken(getRefreshTokenFromPreferences());
+        }
 
         // if the session is valid and contains all the scopes, do not display the login ui.
         boolean needNewAccessToken = this.session.isExpired() || !this.session.contains(scopes);
@@ -494,7 +509,6 @@ public class LiveAuthClient {
      * @param listener called on either completion or error during the logout process.
      */
     public void logout(Object userState, LiveAuthListener listener) {
-
         if (listener == null) {
             listener = NULL_LISTENER;
         }
@@ -510,21 +524,12 @@ public class LiveAuthClient {
         CookieSyncManager cookieSyncManager =
                 CookieSyncManager.createInstance(this.applicationContext);
         CookieManager manager = CookieManager.getInstance();
-        final Uri logoutUri = mOAuthConfig.getLogoutUri();
-        String url = logoutUri.toString();
-        String domain = logoutUri.getHost();
-
-        List<String> cookieKeys = this.getCookieKeysFromPreferences();
-        for (String cookieKey : cookieKeys) {
-            String value = TextUtils.join("", new String[] {
-               cookieKey,
-               "=; expires=Thu, 30-Oct-1980 16:00:00 GMT;domain=",
-               domain,
-               ";path=/;version=1"
-            });
-
-            manager.setCookie(url, value);
-        }
+        
+        // clear cookies to force prompt on login
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            manager.removeAllCookies(null);
+        else
+            manager.removeAllCookie();
 
         cookieSyncManager.sync();
         listener.onAuthComplete(LiveStatus.UNKNOWN, null, userState);
