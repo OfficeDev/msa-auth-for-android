@@ -220,6 +220,11 @@ final class OAuth {
      */
     public static final String LOGIN_HINT = "login_hint";
 
+    /**
+     * The alternative login hint for the username to be pre-filled out in the web form
+     */
+    public static final String USER_NAME = "username";
+
     public static final String THEME = "theme";
 
     /**
