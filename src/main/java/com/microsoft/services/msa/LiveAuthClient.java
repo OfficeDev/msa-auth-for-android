@@ -294,16 +294,18 @@ public class LiveAuthClient {
 
         this.baseScopes = Collections.unmodifiableSet(this.baseScopes);
 
-        RefreshAccessTokenRequest request = new RefreshAccessTokenRequest(this.httpClient,
-                                                                          this.clientId,
-                                                                          this.getRefreshTokenFromPreferences(),
-                                                                          TextUtils.join(OAuth.SCOPE_DELIMITER, this.baseScopes),
-                                                                          this.mOAuthConfig);
-        TokenRequestAsync requestAsync = new TokenRequestAsync(request);
-
-        requestAsync.addObserver(new RefreshTokenWriter());
-
-        requestAsync.execute();
+        final String refreshToken = this.getRefreshTokenFromPreferences();
+        if (!TextUtils.isEmpty(refreshToken)) {
+            final String scopeAsString = TextUtils.join(OAuth.SCOPE_DELIMITER, this.baseScopes);
+            RefreshAccessTokenRequest request = new RefreshAccessTokenRequest(this.httpClient,
+                                                                                 this.clientId,
+                                                                                 refreshToken,
+                                                                                 scopeAsString,
+                                                                                 this.mOAuthConfig);
+            TokenRequestAsync requestAsync = new TokenRequestAsync(request);
+            requestAsync.addObserver(new RefreshTokenWriter());
+            requestAsync.execute();
+        }
     }
 
     public LiveAuthClient(final Context context, final String clientId) {
