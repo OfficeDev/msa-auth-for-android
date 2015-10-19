@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
@@ -293,16 +294,18 @@ public class LiveAuthClient {
 
         this.baseScopes = Collections.unmodifiableSet(this.baseScopes);
 
-        RefreshAccessTokenRequest request = new RefreshAccessTokenRequest(this.httpClient,
-                                                                          this.clientId,
-                                                                          this.getRefreshTokenFromPreferences(),
-                                                                          TextUtils.join(OAuth.SCOPE_DELIMITER, this.baseScopes),
-                                                                          this.mOAuthConfig);
-        TokenRequestAsync requestAsync = new TokenRequestAsync(request);
-
-        requestAsync.addObserver(new RefreshTokenWriter());
-
-        requestAsync.execute();
+        final String refreshToken = this.getRefreshTokenFromPreferences();
+        if (!TextUtils.isEmpty(refreshToken)) {
+            final String scopeAsString = TextUtils.join(OAuth.SCOPE_DELIMITER, this.baseScopes);
+            RefreshAccessTokenRequest request = new RefreshAccessTokenRequest(this.httpClient,
+                                                                                 this.clientId,
+                                                                                 refreshToken,
+                                                                                 scopeAsString,
+                                                                                 this.mOAuthConfig);
+            TokenRequestAsync requestAsync = new TokenRequestAsync(request);
+            requestAsync.addObserver(new RefreshTokenWriter());
+            requestAsync.execute();
+        }
     }
 
     public LiveAuthClient(final Context context, final String clientId) {
@@ -437,24 +440,26 @@ public class LiveAuthClient {
      * @param userState state object that is pass to listener on completion.
      * @param listener called on either completion or error during the login process.
      * @return false == silent login failed, interactive login required.
-     *         true == silent login succeeded.
+     *         true == silent login is continuing on the background thread the listener will be
+     *                 called back when it has completed.
      */
-    public Boolean loginSilent(Iterable<String> scopes, Object userState, LiveAuthListener listener) {
-
-        if (listener == null) {
-            listener = NULL_LISTENER;
-        }
+    public Boolean loginSilent(final Iterable<String> scopes,
+                               final Object userState,
+                               final LiveAuthListener listener) {
 
         if (this.hasPendingLoginRequest) {
             throw new IllegalStateException(ErrorMessages.LOGIN_IN_PROGRESS);
         }
 
+        final Iterable<String> activeScopes;
         if (scopes == null) {
             if (this.baseScopes == null) {
-                scopes = Arrays.asList(new String[0]);
+                activeScopes = Arrays.asList(new String[0]);
             } else {
-                scopes = this.baseScopes;
+                activeScopes = this.baseScopes;
             }
+        } else {
+            activeScopes = scopes;
         }
 
         if (TextUtils.isEmpty(this.session.getRefreshToken())) {
@@ -462,25 +467,28 @@ public class LiveAuthClient {
         }
 
         // if the session is valid and contains all the scopes, do not display the login ui.
-        boolean needNewAccessToken = this.session.isExpired() || !this.session.contains(scopes);
-        boolean silentLoginSucceeded = false;
+        final boolean needNewAccessToken = this.session.isExpired() || !this.session.contains(activeScopes);
+        final boolean attemptingToLoginSilently = TextUtils.isEmpty(this.session.getRefreshToken());
 
-        if (!needNewAccessToken) {
-            Log.i(TAG, "Access token still valid, so using it.");
-            listener.onAuthComplete(LiveStatus.CONNECTED, this.session, userState);
-            silentLoginSucceeded = true;
-        } else if (tryRefresh(scopes)) {
-            Log.i(TAG, "Used refresh token to refresh access and refresh tokens.");
-            listener.onAuthComplete(LiveStatus.CONNECTED, this.session, userState);
-            silentLoginSucceeded = true;
-        } else {
-            //TODO: throw error - interactive login needed
-            Log.i(TAG, "All tokens expired, you need to call login() to initiate interactive logon");
-            silentLoginSucceeded = false;
-        }
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(final Void... voids) {
+                if (!needNewAccessToken) {
+                    Log.i(TAG, "Access token still valid, so using it.");
+                    listener.onAuthComplete(LiveStatus.CONNECTED, LiveAuthClient.this.session, userState);
+                } else if (tryRefresh(activeScopes)) {
+                    Log.i(TAG, "Used refresh token to refresh access and refresh tokens.");
+                    listener.onAuthComplete(LiveStatus.CONNECTED, LiveAuthClient.this.session, userState);
+                } else {
+                    Log.i(TAG, "All tokens expired, you need to call login() to initiate interactive logon");
+                    listener.onAuthComplete(LiveStatus.NOT_CONNECTED,
+                                               LiveAuthClient.this.getSession(), userState);
+                }
+                return null;
+            }
+        }.execute();
 
-        return silentLoginSucceeded;
-
+        return !attemptingToLoginSilently;
     }
 
     /**
