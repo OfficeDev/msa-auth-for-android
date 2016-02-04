@@ -22,6 +22,7 @@
 
 package com.microsoft.services.msa;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -40,7 +41,6 @@ import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.apache.http.client.HttpClient;
@@ -181,6 +181,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
             }
         }
 
+        private WebView webView;
         /** Uri to load */
         private final Uri requestUri;
 
@@ -204,38 +205,31 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
             AuthorizationRequest.this.onException(exception);
         }
 
+        @SuppressLint("SetJavaScriptEnabled")
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
             this.setOnCancelListener(this);
 
-            FrameLayout content = new FrameLayout(this.getContext());
-            LinearLayout webViewContainer = new LinearLayout(this.getContext());
-            WebView webView = new WebView(this.getContext());
+            final LinearLayout webViewContainer = new LinearLayout(this.getContext());
 
-            webView.setWebViewClient(new AuthorizationWebViewClient());
-
-            WebSettings webSettings = webView.getSettings();
-            webSettings.setJavaScriptEnabled(true);
-
-            webView.loadUrl(this.requestUri.toString());
-            webView.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,
-                                                     LayoutParams.FILL_PARENT));
-            webView.setVisibility(View.VISIBLE);
-
+            if (webView == null) {
+                webView = new WebView(this.getContext());
+                webView.setWebViewClient(new AuthorizationWebViewClient());
+                final WebSettings webSettings = webView.getSettings();
+                webSettings.setJavaScriptEnabled(true);
+                webView.loadUrl(this.requestUri.toString());
+                webView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
+                                                         LayoutParams.MATCH_PARENT));
+                webView.setVisibility(View.VISIBLE);
+            }
             webViewContainer.addView(webView);
             webViewContainer.setVisibility(View.VISIBLE);
-
-            content.addView(webViewContainer);
-            content.setVisibility(View.VISIBLE);
-
-            content.forceLayout();
             webViewContainer.forceLayout();
 
-            this.addContentView(content,
-                                new LayoutParams(LayoutParams.FILL_PARENT,
-                                                 LayoutParams.FILL_PARENT));
+            this.addContentView(webViewContainer, new LayoutParams(LayoutParams.MATCH_PARENT,
+                                                                   LayoutParams.MATCH_PARENT));
         }
     }
 
