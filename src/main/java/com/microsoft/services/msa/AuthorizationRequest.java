@@ -22,16 +22,6 @@
 
 package com.microsoft.services.msa;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.http.client.HttpClient;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -52,6 +42,17 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
+import org.apache.http.client.HttpClient;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
 
 /**
  * AuthorizationRequest performs an Authorization Request by launching a WebView Dialog that
@@ -112,7 +113,13 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
                 this.saveCookiesToPreferences();
 
                 AuthorizationRequest.this.onEndUri(uri);
-                OAuthDialog.this.dismiss();
+                dismissDialog();
+            }
+
+            private void dismissDialog() {
+                if (isShowing() && activity != null && !activity.isFinishing()) {
+                    OAuthDialog.this.dismiss();
+                }
             }
 
             /**
@@ -131,7 +138,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
                                         String description,
                                         String failingUrl) {
                 AuthorizationRequest.this.onError("", description, failingUrl);
-                OAuthDialog.this.dismiss();
+                dismissDialog();
             }
 
             private void saveCookiesInMemory(String cookie) {
