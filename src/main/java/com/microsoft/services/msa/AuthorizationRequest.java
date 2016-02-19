@@ -99,7 +99,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
                 Uri uri = Uri.parse(url);
 
                 // only clear cookies that are on the logout domain.
-                if (uri.getHost().equals(mOAuthConfig.getLogoutUri().getHost())) {
+                if (mOAuthConfig.getLogoutUri().getHost().equals(uri.getHost())) {
                     this.saveCookiesInMemory(this.cookieManager.getCookie(url));
                 }
 
@@ -130,6 +130,10 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
                                         int errorCode,
                                         String description,
                                         String failingUrl) {
+                if (errorCode == WebViewClient.ERROR_UNSUPPORTED_SCHEME) {
+                    return;
+                }
+
                 AuthorizationRequest.this.onError("", description, failingUrl);
                 OAuthDialog.this.dismiss();
             }
@@ -240,6 +244,10 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
 
             if (lhsParts.length != rhsParts.length) throw new AssertionError();
             for (int i = 0; i < lhsParts.length; i++) {
+                if (lhsParts[i] == null && rhsParts[i] == null) {
+                    return 0;
+                }
+
                 int compare = lhsParts[i].compareTo(rhsParts[i]);
                 if (compare != 0) {
                     return compare;
@@ -322,7 +330,6 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
             .appendQueryParameter(OAuth.SCOPE, this.scope)
             .appendQueryParameter(OAuth.DISPLAY, displayType)
             .appendQueryParameter(OAuth.RESPONSE_TYPE, responseType)
-            .appendQueryParameter(OAuth.LOCALE, locale)
             .appendQueryParameter(OAuth.REDIRECT_URI, mOAuthConfig.getDesktopUri().toString());
 
         if (this.loginHint != null) {
@@ -434,6 +441,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
         boolean hasFragment = endUri.getFragment() != null;
         boolean hasQueryParameters = endUri.getQuery() != null;
         boolean invalidUri = !hasFragment && !hasQueryParameters;
+        boolean isHierarchical = endUri.isHierarchical();
 
         // check for an invalid uri, and leave early
         if (invalidUri) {
@@ -462,7 +470,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
             }
         }
 
-        if (hasQueryParameters) {
+        if (hasQueryParameters && isHierarchical) {
             String code = endUri.getQueryParameter(OAuth.CODE);
             if (code != null) {
                 this.onAuthorizationResponse(code);
@@ -475,6 +483,16 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
                 String errorUri = endUri.getQueryParameter(OAuth.ERROR_URI);
                 this.onError(error, errorDescription, errorUri);
                 return;
+            }
+        }
+
+        if (hasQueryParameters && !isHierarchical) {
+            String[] pairs = endUri.getQuery().split("&|=");
+            for (int i = 0; i < pairs.length; i =+ 2) {
+                if (pairs[i].equals(OAuth.CODE)) {
+                    this.onAuthorizationResponse(pairs[i + 1]);
+                    return;
+                }
             }
         }
 
