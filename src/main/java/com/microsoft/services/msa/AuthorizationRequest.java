@@ -53,6 +53,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
  * AuthorizationRequest performs an Authorization Request by launching a WebView Dialog that
  * displays the login and consent page and then, on a successful login and consent, performs an
@@ -112,7 +113,13 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
                 this.saveCookiesToPreferences();
 
                 AuthorizationRequest.this.onEndUri(uri);
-                OAuthDialog.this.dismiss();
+                dismissDialog();
+            }
+
+            private void dismissDialog() {
+                if (isShowing() && activity != null && !activity.isFinishing()) {
+                    OAuthDialog.this.dismiss();
+                }
             }
 
             /**
@@ -131,7 +138,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
                                         String description,
                                         String failingUrl) {
                 AuthorizationRequest.this.onError("", description, failingUrl);
-                OAuthDialog.this.dismiss();
+                dismissDialog();
             }
 
             private void saveCookiesInMemory(String cookie) {
