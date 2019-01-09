@@ -11,7 +11,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:2.3.0'
     }
 }
 
@@ -38,7 +38,7 @@ if (JavaVersion.current().isJava8Compatible()) {
 
 android {
     compileSdkVersion 22
-    buildToolsVersion "26.0.2"
+    buildToolsVersion "25"
 
     // squelching errors from msa
     android {
