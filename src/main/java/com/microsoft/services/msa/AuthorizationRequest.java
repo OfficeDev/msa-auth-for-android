@@ -495,7 +495,7 @@ class AuthorizationRequest implements ObservableOAuthRequest, OAuthRequestObserv
 
         if (hasQueryParameters && !isHierarchical) {
             String[] pairs = endUri.getQuery().split("&|=");
-            for (int i = 0; i < pairs.length; i =+ 2) {
+            for (int i = 0; i < pairs.length; i += 2) {
                 if (pairs[i].equals(OAuth.CODE)) {
                     this.onAuthorizationResponse(pairs[i + 1]);
                     return;
