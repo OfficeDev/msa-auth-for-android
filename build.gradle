@@ -4,14 +4,10 @@ apply plugin: 'maven'
 buildscript {
     repositories {
         jcenter()
-        maven {
-            url 'https://maven.google.com/'
-            name 'Google'
-        }
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:1.2.3'
     }
 }
 
@@ -20,10 +16,6 @@ allprojects {
         jcenter()
         maven {
             url project.nightliesUrl
-        }
-        maven {
-            url 'https://maven.google.com/'
-            name 'Google'
         }
     }
 }
@@ -38,7 +30,7 @@ if (JavaVersion.current().isJava8Compatible()) {
 
 android {
     compileSdkVersion 22
-    buildToolsVersion "25"
+    buildToolsVersion "22.0.1"
 
     // squelching errors from msa
     android {
